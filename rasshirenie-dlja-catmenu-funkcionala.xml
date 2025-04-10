@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dleplugin>
+	<name>Расширение для catmenu функционала</name>
+	<description>Позволяет использовать тег
+[cat_id=&quot;1,2,3&quot;]что будет только у категорий 1,2,3[/cat_id]</description>
+	<icon></icon>
+	<version></version>
+	<dleversion>15.3</dleversion>
+	<versioncompare>greater</versioncompare>
+	<upgradeurl></upgradeurl>
+	<filedelete>0</filedelete>
+	<needplugin></needplugin>
+	<mnotice>0</mnotice>
+	<mysqlinstall><![CDATA[]]></mysqlinstall>
+	<mysqlupgrade><![CDATA[]]></mysqlupgrade>
+	<mysqlenable><![CDATA[]]></mysqlenable>
+	<mysqldisable><![CDATA[]]></mysqldisable>
+	<mysqldelete><![CDATA[]]></mysqldelete>
+	<phpinstall><![CDATA[]]></phpinstall>
+	<phpupgrade><![CDATA[]]></phpupgrade>
+	<phpenable><![CDATA[]]></phpenable>
+	<phpdisable><![CDATA[]]></phpdisable>
+	<phpdelete><![CDATA[]]></phpdelete>
+	<notice><![CDATA[]]></notice>
+	<file name="engine/classes/templates.class.php">
+		<operation action="after">
+			<searchcode><![CDATA[		$template = str_replace( "{description}", $row['fulldescr'], $template );]]></searchcode>
+			<replacecode><![CDATA[        if (preg_match('#cat_id=["\'](.+?)["\']#i', $template, $match)) {
+            // Получаем массив разрешённых id, убираем возможные пробелы
+            $allowed_ids = array_map('trim', explode(',', $match[1]));
+
+            if (in_array($row['id'], $allowed_ids)) {
+                // Если текущий id найден – оставляем содержимое, удаляя теги
+                // Группа (.*?) захватывает содержимое между тегами
+                $template = preg_replace(
+                    '#\[(cat_id)=["\'][^"\']+["\']\](.*?)\[/cat_id\]#is',
+                    '$2',
+                    $template
+                );
+            } else {
+                // Если id нет в списке – удаляем полностью конструкцию тегов вместе с содержимым
+                $template = preg_replace( "#\\[(cat_id)=(.+?)\\](.*?)\\[/cat_id\\]#is", "", $template );
+            }
+        }]]></replacecode>
+			<enabled>1</enabled>
+		</operation>
+	</file>
+</dleplugin>
